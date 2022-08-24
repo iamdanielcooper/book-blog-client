@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
+import React, { FormEventHandler, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FORM_KEYS } from './enum';
 
-const SignUpForm = () => {
-    const [formData, setFormData] = useState({
+interface FormData {
+    username: string;
+    email: string;
+    password: string;
+    passwordConfirmed: string;
+    termsConfirmed: boolean;
+}
+
+const SignUpForm = ({ setUserConfirmed }: any) => {
+    const [formData, setFormData] = useState<FormData>({
         [FORM_KEYS.USERNAME]: '',
         [FORM_KEYS.EMAIL]: '',
         [FORM_KEYS.PASSWORD]: '',
         [FORM_KEYS.PASSWORD_CONFIRMED]: '',
         [FORM_KEYS.TERMS_CONFIRMED]: false,
     });
+
     const onChange = (e: { target: HTMLInputElement }, key: String) => {
         setFormData(prevState => {
             switch (key) {
@@ -29,8 +38,15 @@ const SignUpForm = () => {
         });
     };
 
+    const handleSubmit = (event: any) => {
+        event.preventDefault();
+        console.log(formData);
+        // TODO hit the API!
+        setUserConfirmed(true);
+    };
+
     return (
-        <form data-testid='form'>
+        <form data-testid='form' onSubmit={handleSubmit}>
             <h1>Sign Up</h1>
             <h2>Create an account</h2>
             <input
