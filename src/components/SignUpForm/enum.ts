@@ -1,7 +1,5 @@
-export enum FORM_KEYS {
-    USERNAME = 'username',
-    EMAIL = 'email',
-    PASSWORD = 'password',
-    PASSWORD_CONFIRMED = 'passwordConfirmed',
-    TERMS_CONFIRMED = 'termsConfirmed',
+export enum FORM_STATUSES {
+    AWAITING_USER_INPUT = 'awaiting',
+    SENDING = 'sending',
+    ERROR = 'error',
 }

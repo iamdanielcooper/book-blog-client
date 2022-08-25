@@ -1,90 +1,114 @@
-import React, { FormEventHandler, useState } from 'react';
+import axios, { AxiosResponse } from 'axios';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FORM_KEYS } from './enum';
+import { FORM_STATUSES } from './enum';
+const endpoint = 'http://localhost:4000/users/register';
 
-interface FormData {
-    username: string;
-    email: string;
-    password: string;
-    passwordConfirmed: string;
-    termsConfirmed: boolean;
-}
+const SignUpForm = () => {
+    const [username, setUsername] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [confirmedPassword, setConfirmedPassword] = useState<string>('');
+    const [termsAgreed, setTermsAgreed] = useState<boolean>(false);
+    const [formComplete, setFormComplete] = useState<boolean>(false);
+    const [formStatus, setFormStatus] = useState<string>(
+        FORM_STATUSES.AWAITING_USER_INPUT
+    );
+    const [errorMessage, setErrorMessage] = useState<string>('');
+    const [serverResponse, setServerResponse] = useState<AxiosResponse>();
 
-const SignUpForm = ({ setUserConfirmed }: any) => {
-    const [formData, setFormData] = useState<FormData>({
-        [FORM_KEYS.USERNAME]: '',
-        [FORM_KEYS.EMAIL]: '',
-        [FORM_KEYS.PASSWORD]: '',
-        [FORM_KEYS.PASSWORD_CONFIRMED]: '',
-        [FORM_KEYS.TERMS_CONFIRMED]: false,
-    });
+    useEffect(() => {
+        const sendUser = async () => {
+            const response: AxiosResponse = await axios.post(endpoint, {
+                username: username,
+                password: password,
+                email: email,
+                isAdmin: false,
+            });
+            setServerResponse(response);
+        };
+        if (formStatus === FORM_STATUSES.SENDING) {
+            sendUser();
+        }
+    }, [formStatus]);
 
-    const onChange = (e: { target: HTMLInputElement }, key: String) => {
-        setFormData(prevState => {
-            switch (key) {
-                case FORM_KEYS.USERNAME:
-                    return { ...prevState, [FORM_KEYS.USERNAME]: e.target.value };
-                case FORM_KEYS.EMAIL:
-                    return { ...prevState, [FORM_KEYS.EMAIL]: e.target.value };
-                case FORM_KEYS.PASSWORD:
-                    return { ...prevState, [FORM_KEYS.PASSWORD]: e.target.value };
-                case FORM_KEYS.PASSWORD_CONFIRMED:
-                    return { ...prevState, [FORM_KEYS.PASSWORD_CONFIRMED]: e.target.value };
-                case FORM_KEYS.TERMS_CONFIRMED:
-                    return { ...prevState, [FORM_KEYS.TERMS_CONFIRMED]: e.target.checked };
-                default:
-                    return prevState;
-            }
-        });
-    };
+    useEffect(() => {
+        const allFieldsPopulated =
+            password.length > 0 &&
+            password === confirmedPassword &&
+            username.length > 0 &&
+            email.length > 0 &&
+            termsAgreed;
 
-    const handleSubmit = (event: any) => {
-        event.preventDefault();
-        console.log(formData);
-        // TODO hit the API!
-        setUserConfirmed(true);
+        setFormComplete(allFieldsPopulated);
+    }, [confirmedPassword, password, username, email, termsAgreed]);
+
+    useEffect(() => {
+        switch (serverResponse?.status) {
+            case 201:
+                alert('All good mate');
+                break;
+        }
+    }, [serverResponse]);
+
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
+        if (formComplete) {
+            setFormStatus(FORM_STATUSES.SENDING);
+        } else {
+            setFormStatus(FORM_STATUSES.ERROR);
+            setErrorMessage('Form is not complete');
+        }
     };
 
     return (
-        <form data-testid='form' onSubmit={handleSubmit}>
-            <h1>Sign Up</h1>
-            <h2>Create an account</h2>
-            <input
-                onChange={e => onChange(e, FORM_KEYS.USERNAME)}
-                type='text'
-                placeholder='Username'
-                value={formData[FORM_KEYS.USERNAME]}
-            />
-            <input
-                onChange={e => onChange(e, FORM_KEYS.EMAIL)}
-                type='text'
-                placeholder='Email'
-                value={formData.email}
-            />
-            <input
-                onChange={e => onChange(e, FORM_KEYS.PASSWORD)}
-                type='password'
-                placeholder='Password'
-                value={formData.password}
-            />
-            <input
-                onChange={e => onChange(e, FORM_KEYS.PASSWORD_CONFIRMED)}
-                type='password'
-                placeholder='Confirm Password'
-                value={formData[FORM_KEYS.PASSWORD_CONFIRMED]}
-            />
-            <label>
-                I have read and agree to the terms and conditions.
-                <input
-                    onChange={e => onChange(e, FORM_KEYS.TERMS_CONFIRMED)}
-                    checked={formData.termsConfirmed}
-                    type='checkbox'
-                />
-            </label>
-            <p>Error Message</p>
-            <Link to={'/login'}>Already have an account? Log in here.</Link>
-            <button>Sign Up</button>
-        </form>
+        <>
+            {formStatus === FORM_STATUSES.SENDING ? (
+                <h1>Loading</h1>
+            ) : (
+                <form data-testid='form' onSubmit={handleSubmit}>
+                    <h1>Sign Up</h1>
+                    <h2>Create an account</h2>
+                    <input
+                        onChange={e => setUsername(e.target.value)}
+                        type='text'
+                        placeholder='Username'
+                        value={username}
+                    />
+                    <input
+                        onChange={e => setEmail(e.target.value)}
+                        type='text'
+                        placeholder='Email'
+                        value={email}
+                    />
+                    <input
+                        onChange={e => setPassword(e.target.value)}
+                        type='password'
+                        placeholder='Password'
+                        value={password}
+                    />
+                    <input
+                        onChange={e => setConfirmedPassword(e.target.value)}
+                        type='password'
+                        placeholder='Confirm Password'
+                        value={confirmedPassword}
+                    />
+                    <label>
+                        I have read and agree to the terms and conditions.
+                        <input
+                            onChange={e => setTermsAgreed(e.target.checked)}
+                            checked={termsAgreed}
+                            type='checkbox'
+                        />
+                    </label>
+                    <p>{errorMessage}</p>
+                    <Link to={'/login'}>
+                        Already have an account? Log in here.
+                    </Link>
+                    <button>Sign Up</button>
+                </form>
+            )}
+        </>
     );
 };
 
