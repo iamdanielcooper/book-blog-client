@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FORM_STATUSES } from './enum';
+import { FORM_STATUS } from './enum';
 const endpoint = 'http://localhost:4000/users/register';
 
 const SignUpForm = () => {
@@ -10,14 +10,15 @@ const SignUpForm = () => {
     const [password, setPassword] = useState<string>('');
     const [confirmedPassword, setConfirmedPassword] = useState<string>('');
     const [termsAgreed, setTermsAgreed] = useState<boolean>(false);
-    const [formComplete, setFormComplete] = useState<boolean>(false);
+
     const [formStatus, setFormStatus] = useState<string>(
-        FORM_STATUSES.AWAITING_USER_INPUT
+        FORM_STATUS.AWAITING_USER_INPUT
     );
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [serverResponse, setServerResponse] = useState<AxiosResponse>();
 
     useEffect(() => {
+        // TODO - validate form
         const sendUser = async () => {
             const response: AxiosResponse = await axios.post(endpoint, {
                 username: username,
@@ -27,21 +28,10 @@ const SignUpForm = () => {
             });
             setServerResponse(response);
         };
-        if (formStatus === FORM_STATUSES.SENDING) {
+        if (formStatus === FORM_STATUS.SENDING) {
             sendUser();
         }
     }, [formStatus]);
-
-    useEffect(() => {
-        const allFieldsPopulated =
-            password.length > 0 &&
-            password === confirmedPassword &&
-            username.length > 0 &&
-            email.length > 0 &&
-            termsAgreed;
-
-        setFormComplete(allFieldsPopulated);
-    }, [confirmedPassword, password, username, email, termsAgreed]);
 
     useEffect(() => {
         switch (serverResponse?.status) {
@@ -53,17 +43,12 @@ const SignUpForm = () => {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        if (formComplete) {
-            setFormStatus(FORM_STATUSES.SENDING);
-        } else {
-            setFormStatus(FORM_STATUSES.ERROR);
-            setErrorMessage('Form is not complete');
-        }
+        setFormStatus(FORM_STATUS.SENDING);
     };
 
     return (
         <>
-            {formStatus === FORM_STATUSES.SENDING ? (
+            {formStatus === FORM_STATUS.SENDING ? (
                 <h1>Loading</h1>
             ) : (
                 <form data-testid='form' onSubmit={handleSubmit}>
