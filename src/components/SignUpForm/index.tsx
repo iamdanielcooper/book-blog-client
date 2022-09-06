@@ -17,8 +17,18 @@ const SignUpForm = () => {
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [serverResponse, setServerResponse] = useState<AxiosResponse>();
 
+    const formIsComplete = () => {
+        return (
+            termsAgreed &&
+            confirmedPassword.length > 0 &&
+            password.length > 0 &&
+            email.length > 0 &&
+            username.length > 0 &&
+            password === confirmedPassword
+        );
+    };
+
     useEffect(() => {
-        // TODO - validate form
         const sendUser = async () => {
             const response: AxiosResponse = await axios.post(endpoint, {
                 username: username,
@@ -36,14 +46,37 @@ const SignUpForm = () => {
     useEffect(() => {
         switch (serverResponse?.status) {
             case 201:
-                alert('All good mate');
+                setFormStatus(FORM_STATUS.SUCCESS);
                 break;
+            default:
+                setFormStatus(FORM_STATUS.ERROR);
+                setErrorMessage('We should have an error message here');
         }
     }, [serverResponse]);
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        setFormStatus(FORM_STATUS.SENDING);
+        if (formIsComplete()) {
+            setFormStatus(FORM_STATUS.SENDING);
+        } else {
+            setFormStatus(FORM_STATUS.ERROR);
+            setErrorMessage('Form is incomplete');
+        }
+    };
+
+    const renderComponent = () => {
+        switch (formStatus) {
+            case FORM_STATUS.AWAITING_USER_INPUT:
+                return;
+            case FORM_STATUS.SENDING:
+                return <h1>Sending</h1>;
+            case FORM_STATUS.SUCCESS:
+                return <h1>Sent</h1>;
+            case FORM_STATUS.ERROR:
+                return <h1>Error</h1>;
+            default:
+                return <h1>Loading</h1>;
+        }
     };
 
     return (
