@@ -36,6 +36,8 @@ const SignUpForm = () => {
                 email: email,
                 isAdmin: false,
             });
+            console.log(response);
+
             setServerResponse(response);
         };
         if (formStatus === FORM_STATUS.SENDING) {
@@ -49,8 +51,8 @@ const SignUpForm = () => {
                 setFormStatus(FORM_STATUS.SUCCESS);
                 break;
             default:
-                setFormStatus(FORM_STATUS.ERROR);
-                setErrorMessage('We should have an error message here');
+                setFormStatus(FORM_STATUS.AWAITING_USER_INPUT);
+                break;
         }
     }, [serverResponse]);
 
@@ -59,7 +61,7 @@ const SignUpForm = () => {
         if (formIsComplete()) {
             setFormStatus(FORM_STATUS.SENDING);
         } else {
-            setFormStatus(FORM_STATUS.ERROR);
+            setFormStatus(FORM_STATUS.AWAITING_USER_INPUT);
             setErrorMessage('Form is incomplete');
         }
     };
@@ -67,67 +69,59 @@ const SignUpForm = () => {
     const renderComponent = () => {
         switch (formStatus) {
             case FORM_STATUS.AWAITING_USER_INPUT:
-                return;
+                return (
+                    <form data-testid='form' onSubmit={handleSubmit}>
+                        <h1>Sign Up</h1>
+                        <h2>Create an account</h2>
+                        <input
+                            onChange={e => setUsername(e.target.value)}
+                            type='text'
+                            placeholder='Username'
+                            value={username}
+                        />
+                        <input
+                            onChange={e => setEmail(e.target.value)}
+                            type='text'
+                            placeholder='Email'
+                            value={email}
+                        />
+                        <input
+                            onChange={e => setPassword(e.target.value)}
+                            type='password'
+                            placeholder='Password'
+                            value={password}
+                        />
+                        <input
+                            onChange={e => setConfirmedPassword(e.target.value)}
+                            type='password'
+                            placeholder='Confirm Password'
+                            value={confirmedPassword}
+                        />
+                        <label>
+                            I have read and agree to the terms and conditions.
+                            <input
+                                onChange={e => setTermsAgreed(e.target.checked)}
+                                checked={termsAgreed}
+                                type='checkbox'
+                            />
+                        </label>
+                        <p>{errorMessage}</p>
+                        <Link to={'/login'}>
+                            Already have an account? Log in here.
+                        </Link>
+                        <button>Sign Up</button>
+                    </form>
+                );
             case FORM_STATUS.SENDING:
                 return <h1>Sending</h1>;
             case FORM_STATUS.SUCCESS:
-                return <h1>Sent</h1>;
-            case FORM_STATUS.ERROR:
-                return <h1>Error</h1>;
+                return <h1>Sent ✅</h1>;
             default:
                 return <h1>Loading</h1>;
         }
     };
 
-    return (
-        <>
-            {formStatus === FORM_STATUS.SENDING ? (
-                <h1>Loading</h1>
-            ) : (
-                <form data-testid='form' onSubmit={handleSubmit}>
-                    <h1>Sign Up</h1>
-                    <h2>Create an account</h2>
-                    <input
-                        onChange={e => setUsername(e.target.value)}
-                        type='text'
-                        placeholder='Username'
-                        value={username}
-                    />
-                    <input
-                        onChange={e => setEmail(e.target.value)}
-                        type='text'
-                        placeholder='Email'
-                        value={email}
-                    />
-                    <input
-                        onChange={e => setPassword(e.target.value)}
-                        type='password'
-                        placeholder='Password'
-                        value={password}
-                    />
-                    <input
-                        onChange={e => setConfirmedPassword(e.target.value)}
-                        type='password'
-                        placeholder='Confirm Password'
-                        value={confirmedPassword}
-                    />
-                    <label>
-                        I have read and agree to the terms and conditions.
-                        <input
-                            onChange={e => setTermsAgreed(e.target.checked)}
-                            checked={termsAgreed}
-                            type='checkbox'
-                        />
-                    </label>
-                    <p>{errorMessage}</p>
-                    <Link to={'/login'}>
-                        Already have an account? Log in here.
-                    </Link>
-                    <button>Sign Up</button>
-                </form>
-            )}
-        </>
-    );
+    return <>{renderComponent()}</>;
 };
 
 export default SignUpForm;
