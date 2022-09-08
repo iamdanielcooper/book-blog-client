@@ -30,15 +30,19 @@ const SignUpForm = () => {
 
     useEffect(() => {
         const sendUser = async () => {
-            const response: AxiosResponse = await axios.post(endpoint, {
-                username: username,
-                password: password,
-                email: email,
-                isAdmin: false,
-            });
-            console.log(response);
+            try {
+                const response: AxiosResponse = await axios.post(endpoint, {
+                    username: username,
+                    password: password,
+                    email: email,
+                    isAdmin: false,
+                });
+                console.log(response);
 
-            setServerResponse(response);
+                setServerResponse(response);
+            } catch (error) {
+                setErrorMessage('');
+            }
         };
         if (formStatus === FORM_STATUS.SENDING) {
             sendUser();
@@ -54,7 +58,7 @@ const SignUpForm = () => {
                 setFormStatus(FORM_STATUS.AWAITING_USER_INPUT);
                 break;
         }
-    }, [serverResponse]);
+    }, [serverResponse, errorMessage]);
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
