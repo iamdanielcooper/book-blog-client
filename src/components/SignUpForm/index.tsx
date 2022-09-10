@@ -1,5 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FORM_STATUS } from './enum';
 
@@ -75,7 +74,7 @@ const SignUpForm = ({ formStatus, setFormStatus, setFormData }: any) => {
                     type='checkbox'
                 />
             </label>
-            <p>{errorMessage}</p>
+            <p data-testid='errorMessage'>{errorMessage}</p>
             <Link to={'/login'}>Already have an account? Log in here.</Link>
             <button>Sign Up</button>
         </form>
